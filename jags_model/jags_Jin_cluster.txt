@@ -1,0 +1,47 @@
+model
+{
+    for (i in 1:N) {
+        for (j in 1:N) {
+            dist[i, j] <- pow(pow((z[i, 1] - z[j, 1]), 2) + pow((z[i, 
+                2] - z[j, 2]), 2), 0.5)
+            M[i, j] = ifelse(i == j, sigmasq, sigmasq * exp(-phi * 
+                dist[i, j]))
+        }
+    }
+    for (l in 1:L) {
+        for (i in 1:N) {
+            for (j in 1:N) {
+                padj[i, j, l] = ifelse(i == j, 0.00000E+00, phi(a[l] + 
+                  b[l] * abs(x[i] - x[j]) - theta[l] * dist[i, 
+                  j]))
+                adj[i, j, l] ~ dbern(padj[i, j, l])
+            }
+        }
+    }
+    var_all[1:N, 1:N] <- M[1:N, 1:N] + tausq * I[1:N, 1:N]
+    error_prec[1:N, 1:N] <- inverse(var_all[1:N, 1:N])
+    x[1:N] ~ dmnorm(mu_x[1:N], error_prec[1:N, 1:N])
+    for (i in 1:N) {
+        mu_x[i] <- beta
+        categ[i] ~ dcat(omega[1:H])
+        z[i, 1:K] ~ dmnorm(mu_z[categ[i], 1:K], inv_kappasq[categ[i]] * 
+            I[1:K, 1:K])
+    }
+    beta ~ dnorm(0.00000E+00, 1.00000E-04)
+    inv_sigmasq ~ dgamma(sigmasq_prior1, sigmasq_prior2)
+    sigmasq <- 1/inv_sigmasq
+    inv_tausq ~ dgamma(tausq_prior1, tausq_prior2)
+    tausq <- 1/inv_tausq
+    phi ~ dunif(phi_lower, phi_upper)
+    a[1:L] ~ dmnorm(amean_prior[1:L], 1/avar_prior * I[1:L, 1:L])
+    b[1:L] ~ dmnorm(bmean_prior[1:L], 1/bvar_prior * I[1:L, 1:L])
+    for (l in 1:L) {
+        theta[l] ~ dgamma(theta_prior1, theta_prior2)
+    }
+    for (h in 1:H) {
+        mu_z[h, 1:2] ~ dmnorm(mu_prior1[1:K], (1/mu_prior2) * 
+            I[1:K, 1:K])
+        inv_kappasq[h] ~ dgamma(kappa_prior1, kappa_prior2)
+    }
+    omega[1:H] ~ ddirch(alpha[1:H])
+}
