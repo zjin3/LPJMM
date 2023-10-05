@@ -1,5 +1,5 @@
 # LPJMM
-Code for the simulations and the real-world data application in the paper
+Provide the code for the simulations and the real-world data application in the paper "A robust Bayesian latent position approach for community detection in networks with continuous attributes".
 
 - The "data" directory includes all the data used in simulations and the real data application.
 
